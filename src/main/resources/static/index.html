@@ -9,59 +9,72 @@
     <script>
         var stompClient = null;
 
-        function connect() {
-            const jwtToken = localStorage.getItem("jwtToken");
-            console.log("JWT from localStorage:", jwtToken);
-            // Pass token via query param (SockJS-compatible)
-           const socket = new SockJS("http://localhost:9903/ws"); // ❌ no token in URL
-stompClient = Stomp.over(socket);
-stompClient.debug = null;
+      function connect()
+       {
+         const jwtToken = localStorage.getItem("jwtToken");
+         console.log("JWT from localStorage:", jwtToken);
+         // Pass token via query param (SockJS-compatible)
+         const socket = new SockJS("http://localhost:9903/ws"); // ❌ no token in URL
+        stompClient = Stomp.over(socket);
+        stompClient.debug = null;
 
-stompClient.connect(
-    { Authorization: "Bearer " + jwtToken }, // ✅ Send token in header
-    function (frame) {
-        console.log("Connected: " + frame);
+        stompClient.connect(
+         {
+            Authorization: "Bearer " + jwtToken }, // ✅ Send token in header
+            function (frame)
+            {
+                console.log("Connected: " + frame);
+                stompClient.subscribe("/topic/messages", function (message)
+                  {
+                    showMessage(JSON.parse(message.body), false);
+                  }
+                 );
 
-        stompClient.subscribe("/topic/messages", function (message) {
-            showMessage(JSON.parse(message.body), false);
-        });
+           stompClient.subscribe("/user/topic/private", function (message)
+            {
+                showMessage(JSON.parse(message.body), true);
+            }
+            );
+        },
+            function (error) {
+            alert("WebSocket connection error: " + error);
+            }
+          );
+       }
 
-        stompClient.subscribe("/user/topic/private", function (message) {
-            showMessage(JSON.parse(message.body), true);
-        });
-    },
-    function (error) {
-        alert("WebSocket connection error: " + error);
-    }
-);
-
-        }
-
-        function sendPublicMessage() {
-    if (!stompClient || !stompClient.connected) {
-        alert("WebSocket not connected.");
-        return;
-    }
-    const text = document.getElementById("text").value;
-    stompClient.send("/app/public", {}, JSON.stringify({ content: text }));
-}
+        function sendPublicMessage()
+         {
+            if (!stompClient || !stompClient.connected) {
+               alert("WebSocket not connected.");
+              return;
+                }
+            const text = document.getElementById("text").value;
+            stompClient.send("/app/public", {}, JSON.stringify({ content: text }));
+          }
 
 
-        function sendPrivateMessage() {
+        function sendPrivateMessage()
+         {
             if (!stompClient || !stompClient.connected) {
                 alert("WebSocket not connected.");
                 return;
             }
             const text = document.getElementById("privateText").value;
             const to = document.getElementById("to").value;
-            stompClient.send("/app/private", {}, JSON.stringify({ text: text, recipient: to }));
+            stompClient.send("/app/private", {}, JSON.stringify({ content: text, recipient: to }));
         }
 
         function showMessage(message, isPrivate) {
-    const messagesDiv = document.getElementById("messages");
-    const p = document.createElement("p");
-    p.innerHTML = (isPrivate ? "[Private] " : "") + (message.sender || "Unknown") + ": " + (message.text || message.content || "");
-    messagesDiv.appendChild(p);
+            const messagesDiv = document.getElementById("messages");
+            const p = document.createElement("p");
+
+            // Fallback logic: content OR text
+            const msgText = message.text || message.content || "N/A";
+
+            p.innerHTML = (isPrivate ? "[Private] " : "") +
+                (message.sender || "Unknown") + ": " + msgText;
+
+            messagesDiv.appendChild(p);
 }
 
 

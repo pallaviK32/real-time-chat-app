@@ -48,4 +48,3 @@ public class WebSocketAuthChannelInterceptor implements ChannelInterceptor {
     }
 
 }
-
