@@ -22,8 +22,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Autowired
     private WebSocketAuthChannelInterceptor authChannelInterceptor;
 
-//    @Autowired
-//    private JwtHandshakeInterceptor jwtHandshakeInterceptor;
+    @Autowired
+    private JwtHandshakeInterceptor jwtHandshakeInterceptor;
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
@@ -40,9 +40,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-//                .addInterceptors(jwtHandshakeInterceptor)
-//                .setHandshakeHandler(handshakeHandler()) // ⬅️ add this
-                .setAllowedOriginPatterns("*")
+                .addInterceptors(jwtHandshakeInterceptor)
+                .setHandshakeHandler(handshakeHandler()) // ⬅️ add this
+//                .setAllowedOriginPatterns("*")
+                  .setAllowedOriginPatterns("*")
 //                .setAllowedOrigins("*")
                 .withSockJS();
     }

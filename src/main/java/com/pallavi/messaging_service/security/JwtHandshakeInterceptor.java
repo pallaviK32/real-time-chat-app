@@ -12,7 +12,7 @@ import java.security.Principal;
 import java.util.Map;
 
 
-//@Component
+@Component
 public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 
     @Autowired
